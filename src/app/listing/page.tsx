@@ -40,7 +40,7 @@ export default function ListingPage() {
   const [changedListings, setChangedListings] = useState<Set<number>>(new Set());
 
   // Redirect if not authorized
-  if (status === "authenticated" && !["SELLER", "MANAGER"].includes(session.user.role)) {
+  if (status === "authenticated" && session && !["SELLER", "MANAGER"].includes(session.user.role)) {
     router.push("/");
     return null;
   }

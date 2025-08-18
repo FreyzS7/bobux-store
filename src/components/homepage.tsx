@@ -41,7 +41,7 @@ export const Homepage = () => {
     );
   }
 
-  const { user } = session;
+  const { user } = session!;
 
   const getWelcomeMessage = () => {
     switch (user.role) {

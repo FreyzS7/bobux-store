@@ -87,7 +87,7 @@ export default function EditListingPage() {
         }
 
         // Check if user owns this listing
-        if (listing.userId !== parseInt(session.user.id)) {
+        if (session && listing.userId !== parseInt(session.user.id)) {
           toast.error("Anda tidak diizinkan mengedit listing ini");
           router.push("/listing");
           return;

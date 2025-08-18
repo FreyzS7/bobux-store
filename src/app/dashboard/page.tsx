@@ -49,7 +49,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   // Redirect if not manager
-  if (status === "authenticated" && session.user.role !== "MANAGER") {
+  if (status === "authenticated" && session && session.user.role !== "MANAGER") {
     router.push("/");
     return null;
   }

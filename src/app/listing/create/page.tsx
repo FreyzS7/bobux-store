@@ -37,7 +37,7 @@ export default function CreateListingPage() {
   const [loading, setLoading] = useState(false);
 
   // Redirect if not seller
-  if (status === "authenticated" && session.user.role !== "SELLER") {
+  if (status === "authenticated" && session && session.user.role !== "SELLER") {
     router.push("/");
     return null;
   }
