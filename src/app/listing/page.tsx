@@ -39,11 +39,69 @@ export default function ListingPage() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [changedListings, setChangedListings] = useState<Set<number>>(new Set());
 
+  const fetchListingsForPolling = useCallback(async () => {
+    try {
+      setIsPolling(true);
+      const response = await fetch("/api/listings");
+      if (response.ok) {
+        const newData = await response.json();
+        
+        // Check for status changes
+        const changedIds = new Set<number>();
+        listings.forEach((oldListing) => {
+          const newListing = newData.find((l: Listing) => l.id === oldListing.id);
+          if (newListing && newListing.status !== oldListing.status) {
+            changedIds.add(oldListing.id);
+            
+            // Play notification sound for DONE status
+            if (newListing.status === "DONE") {
+              const audio = new Audio("/notification.mp3");
+              audio.play().catch(() => {
+                // Silently fail if audio can't play
+              });
+            }
+          }
+        });
+        
+        if (changedIds.size > 0) {
+          setChangedListings(changedIds);
+          // Clear the highlight after 5 seconds
+          setTimeout(() => setChangedListings(new Set()), 5000);
+        }
+        
+        setListings(newData);
+        setLastUpdated(new Date());
+      }
+    } catch (error) {
+      // Silently handle polling errors to avoid spamming notifications
+      console.error("Polling error:", error);
+    } finally {
+      setIsPolling(false);
+    }
+  }, [listings]);
+
   useEffect(() => {
     if (status === "authenticated" && session) {
       fetchListings();
     }
   }, [status, session]);
+
+  const fetchListings = async () => {
+    try {
+      const response = await fetch("/api/listings");
+      if (response.ok) {
+        const data = await response.json();
+        setListings(data);
+        setLastUpdated(new Date());
+      } else {
+        toast.error("Gagal memuat listing");
+      }
+    } catch (error) {
+      toast.error("Gagal memuat listing");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Separate effect for polling to avoid dependency issues
   useEffect(() => {
@@ -67,66 +125,6 @@ export default function ListingPage() {
     return null;
   }
 
-  const fetchListings = async () => {
-    try {
-      const response = await fetch("/api/listings");
-      if (response.ok) {
-        const data = await response.json();
-        setListings(data);
-        setLastUpdated(new Date());
-      } else {
-        toast.error("Gagal memuat listing");
-      }
-    } catch (error) {
-      toast.error("Gagal memuat listing");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchListingsForPolling = useCallback(async () => {
-    try {
-      setIsPolling(true);
-      const response = await fetch("/api/listings");
-      if (response.ok) {
-        const newData = await response.json();
-        
-        // Check for status changes
-        const changedIds = new Set<number>();
-        listings.forEach((oldListing) => {
-          const newListing = newData.find((l: Listing) => l.id === oldListing.id);
-          if (newListing && newListing.status !== oldListing.status) {
-            changedIds.add(oldListing.id);
-            
-            // Show notification for status changes
-            toast.success(`Status listing "${newListing.itemName}" berubah menjadi ${newListing.status}`, {
-              duration: 5000,
-            });
-            
-            // Play sound for DONE status
-            if (newListing.status === "DONE") {
-              const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpOPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z9NEAxPpuPwtmMcBjiR1/LNeSsFJHfH8N2QQAoUXrTp3Z = =");
-              audio.play().catch(() => {});
-            }
-          }
-        });
-        
-        if (changedIds.size > 0) {
-          setChangedListings(changedIds);
-          // Clear the highlight after 5 seconds
-          setTimeout(() => setChangedListings(new Set()), 5000);
-        }
-        
-        setListings(newData);
-        setLastUpdated(new Date());
-      }
-    } catch (error) {
-      // Silently handle polling errors to avoid spamming notifications
-      console.error("Polling error:", error);
-    } finally {
-      setIsPolling(false);
-    }
-  }, [listings]);
 
   const updateListingStatus = async (listingId: number, newStatus: string) => {
     try {
