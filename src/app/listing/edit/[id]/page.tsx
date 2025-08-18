@@ -54,8 +54,14 @@ export default function EditListingPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [originalData, setOriginalData] = useState<Listing | null>(null);
 
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      fetchListingData();
+    }
+  }, [listingId, status, session]);
+
   // Redirect if not seller
-  if (status === "authenticated" && session.user.role !== "SELLER") {
+  if (status === "authenticated" && session && session.user.role !== "SELLER") {
     router.push("/");
     return null;
   }
@@ -68,10 +74,6 @@ export default function EditListingPage() {
     router.push("/login");
     return null;
   }
-
-  useEffect(() => {
-    fetchListingData();
-  }, [listingId]);
 
   const fetchListingData = async () => {
     try {

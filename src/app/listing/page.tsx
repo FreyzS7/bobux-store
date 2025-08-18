@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/navigation";
@@ -39,20 +39,11 @@ export default function ListingPage() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [changedListings, setChangedListings] = useState<Set<number>>(new Set());
 
-  // Redirect if not authorized
-  if (status === "authenticated" && session && !["SELLER", "MANAGER"].includes(session.user.role)) {
-    router.push("/");
-    return null;
-  }
-
-  if (status === "unauthenticated") {
-    router.push("/login");
-    return null;
-  }
-
   useEffect(() => {
-    fetchListings();
-  }, []);
+    if (status === "authenticated" && session) {
+      fetchListings();
+    }
+  }, [status, session]);
 
   // Separate effect for polling to avoid dependency issues
   useEffect(() => {
@@ -63,7 +54,18 @@ export default function ListingPage() {
       
       return () => clearInterval(pollInterval);
     }
-  }, [session?.user.role, listings.length]);
+  }, [session?.user.role, listings.length, fetchListingsForPolling]);
+
+  // Redirect if not authorized
+  if (status === "authenticated" && session && !["SELLER", "MANAGER"].includes(session.user.role)) {
+    router.push("/");
+    return null;
+  }
+
+  if (status === "unauthenticated") {
+    router.push("/login");
+    return null;
+  }
 
   const fetchListings = async () => {
     try {
@@ -82,7 +84,7 @@ export default function ListingPage() {
     }
   };
 
-  const fetchListingsForPolling = async () => {
+  const fetchListingsForPolling = useCallback(async () => {
     try {
       setIsPolling(true);
       const response = await fetch("/api/listings");
@@ -124,7 +126,7 @@ export default function ListingPage() {
     } finally {
       setIsPolling(false);
     }
-  };
+  }, [listings]);
 
   const updateListingStatus = async (listingId: number, newStatus: string) => {
     try {

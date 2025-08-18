@@ -48,6 +48,12 @@ export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    if (status === "authenticated" && session && session.user.role === "MANAGER") {
+      fetchDashboardData();
+    }
+  }, [status, session]);
+
   // Redirect if not manager
   if (status === "authenticated" && session && session.user.role !== "MANAGER") {
     router.push("/");
@@ -58,10 +64,6 @@ export default function DashboardPage() {
     router.push("/login");
     return null;
   }
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
 
   const fetchDashboardData = async () => {
     try {
