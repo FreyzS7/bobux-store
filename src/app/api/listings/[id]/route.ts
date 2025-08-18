@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,7 +14,8 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const listingId = parseInt(params.id);
+    const { id } = await params;
+    const listingId = parseInt(id);
     const body = await request.json();
     const { status } = body;
 
@@ -61,7 +62,7 @@ export async function PATCH(
 // DELETE - Allow sellers to delete their own listings
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -70,7 +71,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const listingId = parseInt(params.id);
+    const { id } = await params;
+    const listingId = parseInt(id);
 
     // Check if listing exists and belongs to the user (for sellers) or allow managers
     const listing = await prisma.listing.findUnique({
@@ -123,7 +125,7 @@ export async function DELETE(
 // PUT - Allow sellers to edit their own listings
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -132,7 +134,8 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const listingId = parseInt(params.id);
+    const { id } = await params;
+    const listingId = parseInt(id);
     const body = await request.json();
     const {
       playerUsername,
