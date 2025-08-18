@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id            Int      @id @default(autoincrement())
+  username      String   @unique
+  password      String
+  role          UserRole
+  listings      Listing[]
+}
+
+model Listing {
+  id            Int      @id @default(autoincrement())
+  playerUsername String
+  playerUserId   String?
+  itemName      String
+  categories    String[]
+  customNotes   String?
+  price         Int?
+  transferProof String?
+  status        ListingStatus
+  createdAt     DateTime @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime @updatedAt @default(now()) @db.Timestamp(6)
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+
+  orders        Order[]  // <-- Add this line to define the relation to the Order model
+}
+
+model Order {
+  id            Int      @id @default(autoincrement())
+  listingId     Int
+  status        OrderStatus
+  listing       Listing @relation(fields: [listingId], references: [id]) // <-- This line should remain as is
+  createdAt     DateTime @default(now())
+}
+
+enum UserRole {
+  SELLER
+  MANAGER
+  REGULAR_USER
+}
+
+enum ListingStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+}
