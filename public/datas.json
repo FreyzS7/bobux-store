@@ -1,0 +1,233 @@
+{
+    "ScriptGeneration": {
+        "template": {
+            "header": "local Knit = require(game:GetService(\"ReplicatedStorage\").Packages.Knit)\nlocal SaveStructure =\nrequire(game:GetService(\"ServerScriptService\").Server.ServerRuntime.Services.DataStore.DataService.SaveStructure)\nlocal ProfileService = require(Knit.Util.ProfileService)\nlocal ProfileStore = ProfileService.GetProfileStore(\"PlayerData_TEST\", SaveStructure)\nlocal userID = 8838480464\nlocal profile = ProfileStore:LoadProfileAsync(\"Player_\" .. userID, \"ForceLoad\")\nif not profile then\n    return\nend\n\nprofile:Reconcile()\nif profile.Data then",
+            "footer": "end\nprofile:Release()",
+            "gamepass": "    profile.Data.Inventory.GamePass[\"{ITEM_NAME}\"] = true",
+            "tools": "    profile.Data.Inventory.Tools[\"{ITEM_NAME}\"] = true",
+            "titles": "    profile.Data.Inventory.Titles[\"{ITEM_NAME}\"] = { owned = true, dateReceived = tostring(DateTime.now():ToIsoDate()) }"
+        }
+    },
+    "PurchaseItems": {
+        "Bundles": {
+            "VIP": {
+                "available": false,
+                "includes": ["GamePass:VIP", "Titles:VIP"]
+            },
+            "MISTERIUS": {
+                "available": false,
+                "includes": ["GamePass:MISTERIUS", "Titles:MISTERIUS"]
+            },
+            "Bambu_Runcing": {
+                "available": false,
+                "includes": ["GamePass:Bambu_Runcing", "Tools:Bambu Runcing"]
+            },
+            "Divine_Hammer": {
+                "available": false,
+                "includes": ["GamePass:Divine_Hammer", "Tools:Divine Hammer"]
+            },
+            "Val_Hammer": {
+                "available": false,
+                "includes": ["GamePass:Val_Hammer", "Tools:Val Hammer"]
+            },
+            "Ernesto_Guitar": {
+                "available": false,
+                "includes": ["GamePass:Ernesto_Guitar", "Tools:Ernesto Guitar"]
+            },
+            "Cool Guy": {
+                "available": false,
+                "includes": ["GamePass:Cool Guy", "Titles:Cool Guy"]
+            },
+            "Prettiest": {
+                "available": false,
+                "includes": ["GamePass:Prettiest", "Titles:Prettiest"]
+            },
+            "Attractive": {
+                "available": false,
+                "includes": ["GamePass:Attractive", "Titles:Attractive"]
+            },
+            "Rax_Scythe": {
+                "available": false,
+                "includes": ["GamePass:Rax_Scythe", "Tools:Rax Scythe"]
+            },
+            "Nix_Scythe": {
+                "available": false,
+                "includes": ["GamePass:Nix_Scythe", "Tools:Nix Scythe"]
+            },
+            "Amyth_Scythe": {
+                "available": false,
+                "includes": ["GamePass:Amyth_Scythe", "Tools:Amyth Scythe "]
+            },
+            "Kiernan_Katana": {
+                "available": false,
+                "includes": ["GamePass:Kiernan_Katana", "Tools:Kiernan Katana"]
+            },
+            "Zarosh": {
+                "available": false,
+                "includes": ["GamePass:Zarosh", "Tools:Zarosh"]
+            },
+            "Laffey": {
+                "available": false,
+                "includes": ["GamePass:Laffey", "Tools:Laffey"]
+            },
+            "Frey": {
+                "available": false,
+                "includes": ["GamePass:Frey", "Tools:Frey"]
+            },
+            "Korg": {
+                "available": false,
+                "includes": ["GamePass:Korg", "Titles:Korg"]
+            },
+            "Lovey": {
+                "available": false,
+                "includes": ["GamePass:Lovey", "Titles:Lovey"]
+            },
+            "Rish": {
+                "available": false,
+                "includes": ["GamePass:Rish", "Titles:Rish"]
+            },
+            "PhotoBooth": {
+                "available": false,
+                "includes": ["GamePass:PhotoBooth", "Tools:PhotoBooth"]
+            },
+            "BoomBox": {
+                "available": false,
+                "includes": ["GamePass:BoomBox", "Tools:BoomBox"]
+            }
+        },
+        "Individual": {
+            "GamePass": {
+                "VIP": false,
+                "MISTERIUS": false,
+                "Bambu_Runcing": false,
+                "Divine_Hammer": false,
+                "Val_Hammer": false,
+                "Ernesto_Guitar": false,
+                "Cool Guy": false,
+                "Prettiest": false,
+                "Attractive": false,
+                "Rax_Scythe": false,
+                "Nix_Scythe": false,
+                "Amyth_Scythe": false,
+                "Kiernan_Katana": false,
+                "Zarosh": false,
+                "Laffey": false,
+                "Frey": false,
+                "Korg": false,
+                "Lovey": false,
+                "Rish": false,
+                "PhotoBooth": false,
+                "BoomBox": false
+            },
+            "Tools": {
+                "Flash Light": false,
+                "Selfie Stick": false,
+                "Sign": false,
+                "Ngemis": false,
+                "PhotoBooth": false,
+                "Romantic Rose": false,
+                "Val Hammer": false,
+                "Bambu Runcing": false,
+                "Divine Hammer": false,
+                "Ramadhan IDC Egg 2025": false,
+                "Karpet Ajaib": false,
+                "Sarung": false,
+                "Nix Scythe": false,
+                "Rax Scythe": false,
+                "Luv Pickaxe": false,
+                "Cangkul": false,
+                "WheatSeed": false,
+                "Pickaxe": false,
+                "Nix Axe": false,
+                "Ice Axe": false,
+                "Nix Pickaxe": false,
+                "Val Axe": false,
+                "Axe": false,
+                "Glow Stick": false,
+                "Heavey Pickaxe": false,
+                "Ernesto Guitar": false,
+                "Amyth Scythe ": false,
+                "Kiernan Katana": false,
+                "Bone Axe": false,
+                "Laby Pickaxe": false,
+                "Kri Axe": false,
+                "Shi Pickaxe": false,
+                "Image Guesser": false,
+                "Sarung Biasa": false,
+                "Easter Indo Camp 2025": false,
+                "Zarosh": false,
+                "Laffey": false,
+                "Glider": false,
+                "Frey": false,
+                "Summit Volkano": false,
+                "Chrone": false,
+                "BoomBox": false,
+                "Bambu80": false
+            },
+            "Titles": {
+                "MISTERIUS": false,
+                "Attractive": false,
+                "Prettiest": false,
+                "VIP": false,
+                "Cool Guy": false,
+                "FIRE": false,
+                "Darkness": false,
+                "Singer": false,
+                "Lightness": false,
+                "Donator": false,
+                "Admin": false,
+                "Head Admin": false,
+                "Helper": false,
+                "Owner": false,
+                "Scripter": false,
+                "Art Camp": false,
+                "Indo Camp": false,
+                "Head Scripter": false,
+                "Content Creator": false,
+                "Mystical": false,
+                "Indo Camp Villager": false,
+                "Super Human": false,
+                "Warga Baru": false,
+                "Warga Tetap": false,
+                "Veteran": false,
+                "Super Honey Taker": false,
+                "Joy Lumberjack": false,
+                "Pro Lumberjack": false,
+                "Mythical Lumberjack": false,
+                "Super Lumberjack": false,
+                "Mythical Miners": false,
+                "Joy Miners": false,
+                "Pro Miners": false,
+                "Super Miners": false,
+                "Joy Donator": false,
+                "King Donator": false,
+                "Easter Hunters": false,
+                "Super Donator": false,
+                "Mythical Farmer": false,
+                "Pro Farmer": false,
+                "Joy Farmer": false,
+                "Super Farmer": false,
+                "Mythical Honey Taker": false,
+                "Pro Honey Taker": false,
+                "Joy Honey Taker": false,
+                "Art Winner": false,
+                "ANOMALI SUPER": false,
+                "LUCIFER": false,
+                "Lovey": false,
+                "Rish": false,
+                "Abys": false,
+                "Korg": false,
+                "Loris": false,
+                "Noir": false,
+                "Zorg": false,
+                "Blossom": false,
+                "Kyo": false,
+                "Ethernal": false,
+                "Terminator": false,
+                "Asura": false,
+                "TheNewJOURNEY": false,
+                "GARUDA": false
+            }
+        }
+    }
+}
