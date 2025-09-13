@@ -72,7 +72,7 @@ if profile.Data then`
     const footer = `end
 profile:Release()`
 
-    let scriptLines: string[] = []
+    const scriptLines: string[] = []
 
     selectedItems.forEach(itemId => {
       // Check if it's a bundle
