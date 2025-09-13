@@ -86,10 +86,6 @@
                 "available": false,
                 "includes": ["GamePass:Rish", "Titles:Rish"]
             },
-            "PhotoBooth": {
-                "available": false,
-                "includes": ["GamePass:PhotoBooth", "Tools:PhotoBooth"]
-            },
             "BoomBox": {
                 "available": false,
                 "includes": ["GamePass:BoomBox", "Tools:BoomBox"]
@@ -124,7 +120,6 @@
                 "Selfie Stick": false,
                 "Sign": false,
                 "Ngemis": false,
-                "PhotoBooth": false,
                 "Romantic Rose": false,
                 "Val Hammer": false,
                 "Bambu Runcing": false,
