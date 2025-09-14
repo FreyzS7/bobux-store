@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { generateScript, parseItemsFromCategories } from "@/lib/scriptGenerator";
+import fs from 'fs';
+import path from 'path';
 
 export async function GET() {
   try {
@@ -87,6 +90,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Generate script if playerUserId is provided and categories are in the right format
+    let generatedScript = null;
+    if (playerUserId && categories.length > 0) {
+      try {
+        // Load purchase data
+        const datasPath = path.join(process.cwd(), 'public', 'datas.json');
+        if (fs.existsSync(datasPath)) {
+          const purchaseData = JSON.parse(fs.readFileSync(datasPath, 'utf8'));
+          const selectedItems = parseItemsFromCategories(categories);
+
+          if (selectedItems.length > 0) {
+            generatedScript = generateScript(playerUserId, selectedItems, purchaseData);
+          }
+        }
+      } catch (error) {
+        console.error('Error generating script:', error);
+        // Continue without script if generation fails
+      }
+    }
+
     const listing = await prisma.listing.create({
       data: {
         playerUsername,
@@ -96,6 +119,7 @@ export async function POST(request: NextRequest) {
         customNotes: customNotes || null,
         price: price ? parseInt(price) : null,
         transferProof: transferProof || null,
+        generatedScript,
         status: "PENDING",
         userId: parseInt(session.user.id),
       },

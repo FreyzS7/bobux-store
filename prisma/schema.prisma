@@ -32,6 +32,7 @@ model Listing {
   customNotes   String?
   price         Int?
   transferProof String?
+  generatedScript String? @db.Text
   status        ListingStatus
   createdAt     DateTime @default(now()) @db.Timestamp(6)
   updatedAt     DateTime @updatedAt @default(now()) @db.Timestamp(6)

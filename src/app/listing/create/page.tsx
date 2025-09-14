@@ -147,7 +147,7 @@ export default function CreateListingPage() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="playerUsername">Nama Pemain *</Label>
+                  <Label htmlFor="playerUsername">Nama Player *</Label>
                   <Input
                     id="playerUsername"
                     value={formData.playerUsername}
@@ -155,19 +155,19 @@ export default function CreateListingPage() {
                       setFormData(prev => ({ ...prev, playerUsername: e.target.value }))
                     }
                     required
-                    placeholder="Masukkan nama pemain"
+                    placeholder="Masukkan nama Player"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="playerUserId">ID Pemain (Opsional)</Label>
+                  <Label htmlFor="playerUserId">ID Player (Opsional)</Label>
                   <Input
                     id="playerUserId"
                     value={formData.playerUserId}
                     onChange={(e) =>
                       setFormData(prev => ({ ...prev, playerUserId: e.target.value }))
                     }
-                    placeholder="Masukkan ID pemain"
+                    placeholder="Masukkan ID Player"
                   />
                 </div>
 

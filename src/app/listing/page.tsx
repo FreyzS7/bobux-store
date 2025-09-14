@@ -348,7 +348,7 @@ export default function ListingPage() {
 
                   {listing.playerUserId && (
                     <div>
-                      <h4 className="font-medium mb-2">ID Pemain</h4>
+                      <h4 className="font-medium mb-2">ID Player</h4>
                       <p className="text-sm font-mono">{listing.playerUserId}</p>
                     </div>
                   )}

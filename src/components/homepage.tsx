@@ -115,7 +115,7 @@ export const Homepage = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Game pass premium dan akses VIP
+                Game pass premium dan benefit lainnya
               </p>
             </CardContent>
           </Card>
@@ -126,7 +126,7 @@ export const Homepage = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Senjata kuat dan item pertempuran
+                Senjata/Skin aksesoris
               </p>
             </CardContent>
           </Card>
@@ -137,7 +137,7 @@ export const Homepage = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Gelar eksklusif dan pencapaian
+                Title keren buat pamer anjay lu
               </p>
             </CardContent>
           </Card>
@@ -150,9 +150,7 @@ export const Homepage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              BOBUX STORE adalah platform terpercaya untuk memfasilitasi transaksi 
-              item Roblox, GamePass, dan layanan terkait. Kami berkomitmen memberikan 
-              pelayanan terbaik untuk komunitas Roblox Indonesia.
+              BOBUX STORE adalah , apa hayo mikir sendiri males gw
             </p>
             <div className="grid sm:grid-cols-2 gap-4 text-sm">
               <div>
