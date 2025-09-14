@@ -26,6 +26,8 @@ interface PurchaseData {
 
 export default function GeneratorPage() {
   const [userId, setUserId] = useState('')
+  const [username, setUsername] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [generatedScript, setGeneratedScript] = useState('')
   const [purchaseData, setPurchaseData] = useState<PurchaseData | null>(null)
@@ -42,6 +44,33 @@ export default function GeneratorPage() {
     // Only allow numbers
     const numericValue = value.replace(/[^0-9]/g, '')
     setUserId(numericValue)
+  }
+
+  const fetchUserIdFromUsername = async () => {
+    if (!username.trim()) return
+
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/roblox/user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: username.trim() })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setUserId(data.userId)
+      } else {
+        alert(data.error || 'Failed to fetch user ID')
+      }
+    } catch (error) {
+      alert('Failed to fetch user ID')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const toggleItem = (itemId: string) => {
@@ -82,10 +111,13 @@ profile:Release()`
           const [category, itemName] = include.split(':')
           if (category === 'GamePass') {
             scriptLines.push(`    profile.Data.Inventory.GamePass["${itemName}"] = true`)
+            scriptLines.push(`    print(profile.Data.Inventory.GamePass)`)
           } else if (category === 'Tools') {
             scriptLines.push(`    profile.Data.Inventory.Tools["${itemName}"] = true`)
+            scriptLines.push(`    print(profile.Data.Inventory.Tools)`)
           } else if (category === 'Titles') {
             scriptLines.push(`    profile.Data.Inventory.Titles["${itemName}"] = { owned = true, dateReceived = tostring(DateTime.now():ToIsoDate()) }`)
+            scriptLines.push(`    print(profile.Data.Inventory.Titles)`)
           }
         })
       } else {
@@ -93,10 +125,13 @@ profile:Release()`
         const [category, itemName] = itemId.split(':')
         if (category === 'GamePass') {
           scriptLines.push(`    profile.Data.Inventory.GamePass["${itemName}"] = true`)
+          scriptLines.push(`    print(profile.Data.Inventory.GamePass)`)
         } else if (category === 'Tools') {
           scriptLines.push(`    profile.Data.Inventory.Tools["${itemName}"] = true`)
+          scriptLines.push(`    print(profile.Data.Inventory.Tools)`)
         } else if (category === 'Titles') {
           scriptLines.push(`    profile.Data.Inventory.Titles["${itemName}"] = { owned = true, dateReceived = tostring(DateTime.now():ToIsoDate()) }`)
+          scriptLines.push(`    print(profile.Data.Inventory.Titles)`)
         }
       }
     })
@@ -122,7 +157,7 @@ profile:Release()`
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Script Generator</h1>
         <p className="text-muted-foreground mt-2">
-          Generate Roblox scripts to give items to players
+          langsung jadi
         </p>
       </div>
 
@@ -131,26 +166,51 @@ profile:Release()`
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Player Information</CardTitle>
+              <CardTitle>Info Player</CardTitle>
               <CardDescription>Enter the player's user ID</CardDescription>
             </CardHeader>
             <CardContent>
-              <Label htmlFor="userId">User ID</Label>
-              <Input
-                id="userId"
-                type="text"
-                placeholder="8838480464"
-                value={userId}
-                onChange={(e) => handleUserIdChange(e.target.value)}
-                className="mt-2"
-              />
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="username">Username</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Enter Roblox username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={fetchUserIdFromUsername}
+                      disabled={!username.trim() || isLoading}
+                      variant="outline"
+                    >
+                      {isLoading ? 'Loading...' : 'Set'}
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="userId">User ID</Label>
+                  <Input
+                    id="userId"
+                    type="text"
+                    placeholder="8838480464"
+                    value={userId}
+                    onChange={(e) => handleUserIdChange(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <CardTitle>Select Items</CardTitle>
-              <CardDescription>Choose items to give to the player</CardDescription>
+              <CardDescription>Pilih item bisa bundle dan individual</CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="bundles">
@@ -267,7 +327,7 @@ profile:Release()`
             <CardHeader>
               <CardTitle>Generated Script</CardTitle>
               <CardDescription>
-                Copy this script and run it in Roblox Studio
+                Tinggal paste di console roblox studio atau console roblox server
               </CardDescription>
             </CardHeader>
             <CardContent>
