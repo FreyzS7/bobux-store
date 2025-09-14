@@ -167,7 +167,7 @@ profile:Release()`
           <Card>
             <CardHeader>
               <CardTitle>Info Player</CardTitle>
-              <CardDescription>Enter the player's user ID</CardDescription>
+              <CardDescription>auto matis convert username ke playeruserid</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -335,7 +335,7 @@ profile:Release()`
                 <Textarea
                   value={generatedScript}
                   readOnly
-                  placeholder="Generated script will appear here..."
+                  placeholder="Nanti muncul disini..."
                   className="font-mono text-sm min-h-96"
                 />
                 <Button 
