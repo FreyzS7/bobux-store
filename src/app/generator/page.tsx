@@ -85,8 +85,7 @@ export default function GeneratorPage() {
     if (!purchaseData || !userId || selectedItems.length === 0) return
 
     const header = `local Knit = require(game:GetService("ReplicatedStorage").Packages.Knit)
-local SaveStructure =
-require(game:GetService("ServerScriptService").Server.ServerRuntime.Services.DataStore.DataService.SaveStructure)
+local SaveStructure = require(game:GetService("ServerScriptService").Server.ServerRuntime.Services.DataStore.DataService.SaveStructure)
 local ProfileService = require(Knit.Util.ProfileService)
 local ProfileStore = ProfileService.GetProfileStore("PlayerData_TEST", SaveStructure)
 local userID = ${userId}
@@ -116,8 +115,8 @@ profile:Release()`
             scriptLines.push(`    profile.Data.Inventory.Tools["${itemName}"] = true`)
             scriptLines.push(`    print(profile.Data.Inventory.Tools)`)
           } else if (category === 'Titles') {
-            scriptLines.push(`    profile.Data.Inventory.Titles["${itemName}"] = { owned = true, dateReceived = tostring(DateTime.now():ToIsoDate()) }`)
-            scriptLines.push(`    print(profile.Data.Inventory.Titles)`)
+            scriptLines.push(`    profile.Data.Inventory.Tittles["${itemName}"] = { owned = true, dateReceived = tostring(DateTime.now():ToIsoDate()) }`)
+            scriptLines.push(`    print(profile.Data.Inventory.Tittles)`)
           }
         })
       } else {
@@ -129,9 +128,9 @@ profile:Release()`
         } else if (category === 'Tools') {
           scriptLines.push(`    profile.Data.Inventory.Tools["${itemName}"] = true`)
           scriptLines.push(`    print(profile.Data.Inventory.Tools)`)
-        } else if (category === 'Titles') {
-          scriptLines.push(`    profile.Data.Inventory.Titles["${itemName}"] = { owned = true, dateReceived = tostring(DateTime.now():ToIsoDate()) }`)
-          scriptLines.push(`    print(profile.Data.Inventory.Titles)`)
+        } else if (category === 'Tittles') {
+          scriptLines.push(`    profile.Data.Inventory.Tittles["${itemName}"] = { owned = true, dateReceived = tostring(DateTime.now():ToIsoDate()) }`)
+          scriptLines.push(`    print(profile.Data.Inventory.Tittles)`)
         }
       }
     })
