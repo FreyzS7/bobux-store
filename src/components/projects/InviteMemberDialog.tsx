@@ -44,12 +44,12 @@ export function InviteMemberDialog({ projectId, onSuccess }: InviteMemberDialogP
         throw new Error(error.error || "Failed to send invitation");
       }
 
-      toast.success(`Invitation sent to ${username}!`);
+      toast.success(`Invite dikirim ke ${username}!`);
       setOpen(false);
       setUsername("");
       onSuccess?.();
     } catch (error: any) {
-      toast.error(error.message || "Failed to send invitation");
+      toast.error(error.message || "Gagal kirim invite");
     } finally {
       setLoading(false);
     }
@@ -60,15 +60,15 @@ export function InviteMemberDialog({ projectId, onSuccess }: InviteMemberDialogP
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <UserPlus className="h-4 w-4 mr-2" />
-          Invite Member
+          Invite Anggota
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Invite Member</DialogTitle>
+            <DialogTitle>Invite Anggota</DialogTitle>
             <DialogDescription>
-              Invite a user to collaborate on this project by entering their username.
+              Invite user buat kolaborasi di projek ini dengan masukin username mereka
             </DialogDescription>
           </DialogHeader>
 
@@ -79,7 +79,7 @@ export function InviteMemberDialog({ projectId, onSuccess }: InviteMemberDialogP
               </Label>
               <Input
                 id="username"
-                placeholder="Enter username"
+                placeholder="Masukin username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -87,7 +87,7 @@ export function InviteMemberDialog({ projectId, onSuccess }: InviteMemberDialogP
                 autoComplete="off"
               />
               <p className="text-xs text-muted-foreground">
-                The user will receive an invitation to join this project
+                User bakal nerima invite buat join projek ini
               </p>
             </div>
           </div>
@@ -99,10 +99,10 @@ export function InviteMemberDialog({ projectId, onSuccess }: InviteMemberDialogP
               onClick={() => setOpen(false)}
               disabled={loading}
             >
-              Cancel
+              Batal
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Sending..." : "Send Invitation"}
+              {loading ? "Lagi ngirim..." : "Kirim Invite"}
             </Button>
           </DialogFooter>
         </form>

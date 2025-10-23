@@ -30,6 +30,7 @@ interface CreateTaskDialogProps {
   members: ProjectMemberWithUser[];
   editTask?: TaskWithRelations | null;
   onSuccess?: () => void;
+  onCancel?: () => void;
   trigger?: React.ReactNode;
 }
 
@@ -38,6 +39,7 @@ export function CreateTaskDialog({
   members,
   editTask,
   onSuccess,
+  onCancel,
   trigger,
 }: CreateTaskDialogProps) {
   const [open, setOpen] = useState(false);
@@ -49,15 +51,22 @@ export function CreateTaskDialog({
     assignedToId: "unassigned" as string,
   });
 
+  // Auto-open dialog when editTask is provided
   useEffect(() => {
     if (editTask) {
+      setOpen(true);
       setFormData({
         title: editTask.title,
         description: editTask.description || "",
         status: editTask.status as "TODO" | "IN_PROGRESS" | "COMPLETED",
         assignedToId: editTask.assignedToId?.toString() || "unassigned",
       });
-    } else {
+    }
+  }, [editTask]);
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open && !editTask) {
       setFormData({
         title: "",
         description: "",
@@ -65,7 +74,7 @@ export function CreateTaskDialog({
         assignedToId: "unassigned",
       });
     }
-  }, [editTask, open]);
+  }, [open, editTask]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +95,9 @@ export function CreateTaskDialog({
 
       if (formData.assignedToId && formData.assignedToId !== "unassigned") {
         payload.assignedToId = parseInt(formData.assignedToId);
+      } else if (editTask) {
+        // When editing and unassigning, explicitly set to null
+        payload.assignedToId = null;
       }
 
       const response = await fetch(url, {
@@ -101,44 +113,52 @@ export function CreateTaskDialog({
         throw new Error(error.error || "Failed to save task");
       }
 
-      toast.success(editTask ? "Task updated successfully!" : "Task created successfully!");
+      toast.success(editTask ? "Task berhasil diupdate!" : "Task berhasil dibuat!");
       setOpen(false);
       setFormData({ title: "", description: "", status: "TODO", assignedToId: "unassigned" });
       onSuccess?.();
     } catch (error: any) {
-      toast.error(error.message || "Failed to save task");
+      toast.error(error.message || "Gagal simpan task");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    // If closing the dialog and we're in edit mode, notify parent
+    if (!newOpen && editTask) {
+      onCancel?.();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
           <Button size="sm">
             <Plus className="h-4 w-4 mr-2" />
-            Add Task
+            Tambah Task
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>{editTask ? "Edit Task" : "Create New Task"}</DialogTitle>
+            <DialogTitle>{editTask ? "Edit Task" : "Bikin Task Baru"}</DialogTitle>
             <DialogDescription>
-              {editTask ? "Update task details" : "Add a new task to this project"}
+              {editTask ? "Update detail task" : "Tambahin task baru ke projek ini"}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="title">
-                Task Title <span className="text-destructive">*</span>
+                Judul Task <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="title"
-                placeholder="Task title"
+                placeholder="Judul task"
                 value={formData.title}
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
@@ -149,10 +169,10 @@ export function CreateTaskDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Deskripsi</Label>
               <Textarea
                 id="description"
-                placeholder="Task description (optional)"
+                placeholder="Deskripsi task (opsional)"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
@@ -172,18 +192,18 @@ export function CreateTaskDialog({
                 disabled={loading}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder="Pilih status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="TODO">To Do</SelectItem>
-                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
+                  <SelectItem value="TODO">Belum Dikerjain</SelectItem>
+                  <SelectItem value="IN_PROGRESS">Lagi Ngerjain</SelectItem>
+                  <SelectItem value="COMPLETED">Udah Kelar</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="assignee">Assign To</Label>
+              <Label htmlFor="assignee">Ditugasin ke</Label>
               <Select
                 value={formData.assignedToId}
                 onValueChange={(value) =>
@@ -192,10 +212,10 @@ export function CreateTaskDialog({
                 disabled={loading}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Unassigned" />
+                  <SelectValue placeholder="Belum ditugasin" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  <SelectItem value="unassigned">Belum ditugasin</SelectItem>
                   {members.map((member) => (
                     <SelectItem key={member.userId} value={member.userId.toString()}>
                       {member.user.username}
@@ -213,10 +233,10 @@ export function CreateTaskDialog({
               onClick={() => setOpen(false)}
               disabled={loading}
             >
-              Cancel
+              Batal
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : editTask ? "Update Task" : "Create Task"}
+              {loading ? "Lagi nyimpen..." : editTask ? "Update Task" : "Bikin Task"}
             </Button>
           </DialogFooter>
         </form>

@@ -8,10 +8,11 @@ import { Navigation } from "@/components/navigation";
 import { TaskBoard } from "@/components/projects/TaskBoard";
 import { CreateTaskDialog } from "@/components/projects/CreateTaskDialog";
 import { InviteMemberDialog } from "@/components/projects/InviteMemberDialog";
+import { ProjectSettingsDialog } from "@/components/projects/ProjectSettingsDialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Settings } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRealtimeProject } from "@/hooks/useRealtimeProject";
@@ -31,7 +32,7 @@ export default function ProjectDetailPage() {
 
       if (!response.ok) {
         if (response.status === 403) {
-          toast.error("You don't have access to this project");
+          toast.error("Lo ga punya akses ke projek ini");
           router.push("/projects");
           return;
         }
@@ -41,7 +42,7 @@ export default function ProjectDetailPage() {
       const data = await response.json();
       setProject(data);
     } catch (error: any) {
-      toast.error(error.message || "Failed to load project");
+      toast.error(error.message || "Gagal load projek nih");
       router.push("/projects");
     } finally {
       setLoading(false);
@@ -73,7 +74,7 @@ export default function ProjectDetailPage() {
         <Navigation />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
-            <p className="text-muted-foreground">Loading project...</p>
+            <p className="text-muted-foreground">Lagi loading projek...</p>
           </div>
         </div>
       </>
@@ -86,7 +87,7 @@ export default function ProjectDetailPage() {
         <Navigation />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
-            <p className="text-muted-foreground">Project not found</p>
+            <p className="text-muted-foreground">Projek ga ketemu</p>
           </div>
         </div>
       </>
@@ -108,7 +109,7 @@ export default function ProjectDetailPage() {
           <Link href="/projects">
             <Button variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Projects
+              Balik ke Daftar Projek
             </Button>
           </Link>
 
@@ -126,7 +127,7 @@ export default function ProjectDetailPage() {
                 )}
                 <div className="flex items-center space-x-2 mt-2">
                   <span className="text-sm text-muted-foreground">
-                    Created by {project.owner.username}
+                    Dibuat sama {project.owner.username}
                   </span>
                 </div>
               </div>
@@ -147,10 +148,13 @@ export default function ProjectDetailPage() {
                 </>
               )}
               {isOwner && (
-                <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
-                </Button>
+                <ProjectSettingsDialog
+                  projectId={parseInt(projectId)}
+                  projectName={project.name}
+                  projectDescription={project.description}
+                  projectIcon={project.icon}
+                  onSuccess={fetchProject}
+                />
               )}
             </div>
           </div>
@@ -159,7 +163,7 @@ export default function ProjectDetailPage() {
         {/* Members */}
         <div className="mb-6">
           <h3 className="text-sm font-medium text-muted-foreground mb-3">
-            Members ({project.members.length})
+            Anggota ({project.members.length})
           </h3>
           <div className="flex flex-wrap gap-2">
             {project.members.map((member) => (

@@ -36,11 +36,11 @@ export function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "TODO":
-        return "To Do";
+        return "Belum Dikerjain";
       case "IN_PROGRESS":
-        return "In Progress";
+        return "Lagi Ngerjain";
       case "COMPLETED":
-        return "Completed";
+        return "Udah Kelar";
       default:
         return status;
     }
@@ -88,7 +88,7 @@ export function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
                 className="text-destructive"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+                Hapus
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

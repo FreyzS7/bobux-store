@@ -47,14 +47,14 @@ export function CreateProjectDialog() {
       }
 
       const project = await response.json();
-      toast.success("Project created successfully!");
+      toast.success("Projek berhasil dibuat!");
       setOpen(false);
       setFormData({ name: "", description: "", icon: "" });
       router.push(`/projects/${project.id}`);
       router.refresh();
     } catch (error: any) {
-      toast.error(error.message || "Failed to create project");
-    } finally {
+      toast.error(error.message || "Gagal bikin projek");
+    } finally{
       setLoading(false);
     }
   };
@@ -64,26 +64,26 @@ export function CreateProjectDialog() {
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
-          New Project
+          Projek Baru
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create New Project</DialogTitle>
+            <DialogTitle>Bikin Projek Baru</DialogTitle>
             <DialogDescription>
-              Create a new project to organize and track tasks collaboratively.
+              Bikin projek baru buat ngatur dan tracking task bareng tim
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="name">
-                Project Name <span className="text-destructive">*</span>
+                Nama Projek <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="name"
-                placeholder="My Awesome Project"
+                placeholder="Projek Keren Gue"
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
@@ -106,15 +106,15 @@ export function CreateProjectDialog() {
                 maxLength={2}
               />
               <p className="text-xs text-muted-foreground">
-                Add an emoji to represent your project
+                Tambahin emoji buat represent projek lo
               </p>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Deskripsi</Label>
               <Textarea
                 id="description"
-                placeholder="What is this project about?"
+                placeholder="Projek ini tentang apa sih?"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
@@ -132,10 +132,10 @@ export function CreateProjectDialog() {
               onClick={() => setOpen(false)}
               disabled={loading}
             >
-              Cancel
+              Batal
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Creating..." : "Create Project"}
+              {loading ? "Lagi bikin..." : "Bikin Projek"}
             </Button>
           </DialogFooter>
         </form>

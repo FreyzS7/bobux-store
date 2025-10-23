@@ -23,7 +23,7 @@ export const Navigation = () => {
     const { role } = session.user;
     const links = [
       { href: "/", label: "Beranda" },
-      { href: "/projects", label: "Projects" },
+      { href: "/projects", label: "Projek" },
     ];
 
     if (role === "SELLER") {

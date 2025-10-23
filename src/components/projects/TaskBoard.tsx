@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -26,14 +26,21 @@ interface TaskBoardProps {
 type TaskStatus = "TODO" | "IN_PROGRESS" | "COMPLETED";
 
 const columns: { id: TaskStatus; title: string; color: string }[] = [
-  { id: "TODO", title: "To Do", color: "border-slate-500" },
-  { id: "IN_PROGRESS", title: "In Progress", color: "border-blue-500" },
-  { id: "COMPLETED", title: "Completed", color: "border-green-500" },
+  { id: "TODO", title: "Belum Dikerjain", color: "border-slate-500" },
+  { id: "IN_PROGRESS", title: "Lagi Ngerjain", color: "border-blue-500" },
+  { id: "COMPLETED", title: "Udah Kelar", color: "border-green-500" },
 ];
 
 export function TaskBoard({ projectId, tasks, members, onTasksChange }: TaskBoardProps) {
   const [activeTask, setActiveTask] = useState<TaskWithRelations | null>(null);
   const [editingTask, setEditingTask] = useState<TaskWithRelations | null>(null);
+  const [optimisticTasks, setOptimisticTasks] = useState<TaskWithRelations[]>(tasks);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Sync optimistic tasks with props when they change
+  useEffect(() => {
+    setOptimisticTasks(tasks);
+  }, [tasks]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -44,13 +51,16 @@ export function TaskBoard({ projectId, tasks, members, onTasksChange }: TaskBoar
   );
 
   const getTasksByStatus = (status: TaskStatus) => {
-    return tasks
+    return optimisticTasks
       .filter((task) => task.status === status)
       .sort((a, b) => a.position - b.position);
   };
 
   const handleDragStart = (event: DragStartEvent) => {
-    const task = tasks.find((t) => t.id === event.active.id);
+    // Prevent drag if another drag operation is in progress
+    if (isDragging) return;
+
+    const task = optimisticTasks.find((t) => t.id === event.active.id);
     setActiveTask(task || null);
   };
 
@@ -60,17 +70,35 @@ export function TaskBoard({ projectId, tasks, members, onTasksChange }: TaskBoar
 
     if (!over) return;
 
+    // Prevent concurrent drag operations
+    if (isDragging) {
+      toast.error("Tunggu dulu, lagi proses nih");
+      return;
+    }
+
     const taskId = active.id as number;
     const newStatus = over.id as TaskStatus;
 
-    const task = tasks.find((t) => t.id === taskId);
+    const task = optimisticTasks.find((t) => t.id === taskId);
     if (!task) return;
 
     // If status hasn't changed, do nothing
     if (task.status === newStatus) return;
 
+    // Lock dragging
+    setIsDragging(true);
+
+    // Store the original state for rollback
+    const previousTasks = [...optimisticTasks];
+
+    // Optimistically update the UI immediately
+    setOptimisticTasks((prevTasks) =>
+      prevTasks.map((t) =>
+        t.id === taskId ? { ...t, status: newStatus } : t
+      )
+    );
+
     try {
-      // Optimistically update UI
       const response = await fetch(`/api/projects/${projectId}/tasks/${taskId}`, {
         method: "PATCH",
         headers: {
@@ -83,16 +111,20 @@ export function TaskBoard({ projectId, tasks, members, onTasksChange }: TaskBoar
         throw new Error("Failed to update task");
       }
 
-      toast.success("Task status updated!");
-      onTasksChange();
+      toast.success("Status task udah diupdate!");
+      onTasksChange(); // Fetch fresh data from server
     } catch (error) {
-      toast.error("Failed to update task status");
-      onTasksChange(); // Refresh to revert optimistic update
+      // Rollback to previous state on error
+      setOptimisticTasks(previousTasks);
+      toast.error("Gagal update status task");
+    } finally {
+      // Always unlock dragging after operation completes
+      setIsDragging(false);
     }
   };
 
   const handleDeleteTask = async (taskId: number) => {
-    if (!confirm("Are you sure you want to delete this task?")) return;
+    if (!confirm("Lo yakin mau hapus task ini?")) return;
 
     try {
       const response = await fetch(`/api/projects/${projectId}/tasks/${taskId}`, {
@@ -103,10 +135,10 @@ export function TaskBoard({ projectId, tasks, members, onTasksChange }: TaskBoar
         throw new Error("Failed to delete task");
       }
 
-      toast.success("Task deleted successfully!");
+      toast.success("Task udah dihapus!");
       onTasksChange();
     } catch (error) {
-      toast.error("Failed to delete task");
+      toast.error("Gagal hapus task");
     }
   };
 
@@ -116,7 +148,13 @@ export function TaskBoard({ projectId, tasks, members, onTasksChange }: TaskBoar
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {isDragging && (
+        <div className="fixed top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md shadow-lg z-50 flex items-center space-x-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+          <span className="text-sm font-medium">Lagi update task...</span>
+        </div>
+      )}
+      <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 ${isDragging ? 'pointer-events-none opacity-60' : ''}`}>
         {columns.map((column) => {
           const columnTasks = getTasksByStatus(column.id);
           return (
@@ -149,6 +187,9 @@ export function TaskBoard({ projectId, tasks, members, onTasksChange }: TaskBoar
           onSuccess={() => {
             setEditingTask(null);
             onTasksChange();
+          }}
+          onCancel={() => {
+            setEditingTask(null);
           }}
           trigger={<div />}
         />

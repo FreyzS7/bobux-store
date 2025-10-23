@@ -26,7 +26,7 @@ export default function ProjectsPage() {
       const data = await response.json();
       setProjects(data);
     } catch (error: any) {
-      toast.error(error.message || "Failed to load projects");
+      toast.error(error.message || "Gagal load projek nih");
     } finally {
       setLoading(false);
     }
@@ -49,7 +49,7 @@ export default function ProjectsPage() {
         <Navigation />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
-            <p className="text-muted-foreground">Loading projects...</p>
+            <p className="text-muted-foreground">Lagi loading projek...</p>
           </div>
         </div>
       </>
@@ -62,9 +62,9 @@ export default function ProjectsPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Projects</h1>
+            <h1 className="text-3xl font-bold">Projek Gue</h1>
             <p className="text-muted-foreground mt-1">
-              Manage and collaborate on your projects
+              Kelola dan kolaborasi projek bareng tim lo
             </p>
           </div>
           <CreateProjectDialog />
@@ -75,9 +75,9 @@ export default function ProjectsPage() {
             <div className="text-center space-y-4">
               <div className="text-6xl">📁</div>
               <div>
-                <h3 className="text-lg font-semibold">No projects yet</h3>
+                <h3 className="text-lg font-semibold">Belum ada projek nih</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Create your first project to get started
+                  Bikin projek pertama lo buru
                 </p>
               </div>
               <CreateProjectDialog />
