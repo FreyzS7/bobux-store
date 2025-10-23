@@ -51,7 +51,7 @@ export async function PATCH(
     }
 
     const body: UpdateTaskInput = await request.json();
-    const { title, description, status, assignedToId, position } = body;
+    const { title, description, status, assignedToId, position, labels } = body;
 
     const updateData: any = {};
     if (title !== undefined) updateData.title = title.trim();
@@ -59,6 +59,7 @@ export async function PATCH(
     if (status !== undefined) updateData.status = status;
     if (assignedToId !== undefined) updateData.assignedToId = assignedToId;
     if (position !== undefined) updateData.position = position;
+    if (labels !== undefined) updateData.labels = labels;
 
     const task = await prisma.task.update({
       where: { id: taskIdNum },

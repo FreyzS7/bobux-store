@@ -46,6 +46,12 @@ export async function GET() {
             }
           }
         },
+        tasks: {
+          select: {
+            id: true,
+            status: true,
+          }
+        },
         _count: {
           select: {
             tasks: true,
@@ -119,6 +125,12 @@ export async function POST(request: NextRequest) {
                 role: true,
               }
             }
+          }
+        },
+        tasks: {
+          select: {
+            id: true,
+            status: true,
           }
         },
         _count: {

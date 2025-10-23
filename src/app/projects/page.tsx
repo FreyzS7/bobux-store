@@ -8,6 +8,7 @@ import { ProjectCard } from "@/components/projects/ProjectCard";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
 import { Navigation } from "@/components/navigation";
 import { toast } from "sonner";
+import { useRealtimeProjects } from "@/hooks/useRealtimeProjects";
 
 export default function ProjectsPage() {
   const { data: session, status } = useSession();
@@ -43,6 +44,12 @@ export default function ProjectsPage() {
     }
   }, [status, router, fetchProjects]);
 
+  // Enable realtime subscriptions for project changes
+  useRealtimeProjects({
+    userId: parseInt(session?.user?.id || "0"),
+    onProjectChange: fetchProjects,
+  });
+
   if (status === "loading" || loading) {
     return (
       <>
@@ -69,7 +76,7 @@ export default function ProjectsPage() {
           </div>
           <CreateProjectDialog />
         </div>
-
+        
         {projects.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed rounded-lg">
             <div className="text-center space-y-4">

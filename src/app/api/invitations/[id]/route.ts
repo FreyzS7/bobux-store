@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { broadcastInvitation, broadcastMemberChange } from "@/lib/supabase/broadcast";
 
 export async function PATCH(
   request: NextRequest,
@@ -64,6 +65,10 @@ export async function PATCH(
         })
       ]);
 
+      // Broadcast invitation accepted and member joined events
+      await broadcastInvitation(userId, invitationId, "accepted");
+      await broadcastMemberChange(invitation.projectId, userId, "joined");
+
       return NextResponse.json({ message: "Invitation accepted successfully" });
     } else {
       // Reject invitation
@@ -71,6 +76,9 @@ export async function PATCH(
         where: { id: invitationId },
         data: { status: "REJECTED" }
       });
+
+      // Broadcast invitation rejected event
+      await broadcastInvitation(userId, invitationId, "rejected");
 
       return NextResponse.json({ message: "Invitation rejected" });
     }

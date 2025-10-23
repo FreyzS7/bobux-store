@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { UpdateProjectInput } from "@/types/projects";
+import { createClient } from "@supabase/supabase-js";
 
 // Helper function to check if user has access to project
 async function hasProjectAccess(projectId: number, userId: number) {
@@ -204,9 +205,35 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    // Get all members before deleting to broadcast to them
+    const members = await prisma.projectMember.findMany({
+      where: { projectId },
+      select: { userId: true }
+    });
+
+    // Delete the project (cascade will delete members, tasks, etc.)
     await prisma.project.delete({
       where: { id: projectId },
     });
+
+    // Broadcast project deletion to all members
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    // Broadcast to each member (including owner)
+    const memberUserIds = [...members.map(m => m.userId), userId];
+    const uniqueUserIds = [...new Set(memberUserIds)];
+
+    for (const memberId of uniqueUserIds) {
+      const channel = supabase.channel(`projects:${memberId}`);
+      await channel.send({
+        type: "broadcast",
+        event: "project_deleted",
+        payload: { projectId, userId: memberId },
+      });
+    }
 
     return NextResponse.json({ message: "Project deleted successfully" });
   } catch (error) {

@@ -11,8 +11,12 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
-  const taskCount = project._count?.tasks ?? project.tasks.length;
-  const memberCount = project._count?.members ?? project.members.length;
+  const taskCount = project._count?.tasks ?? project.tasks?.length ?? 0;
+  const memberCount = project._count?.members ?? project.members?.length ?? 0;
+
+  // Calculate progress
+  const completedTasks = project.tasks?.filter(task => task.status === "COMPLETED").length ?? 0;
+  const progress = taskCount > 0 ? Math.round((completedTasks / taskCount) * 100) : 0;
 
   return (
     <Link href={`/projects/${project.id}`}>
@@ -45,11 +49,32 @@ export function ProjectCard({ project }: ProjectCardProps) {
             </p>
           )}
 
+          {/* Progress Bar */}
+          {taskCount > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">Progress</span>
+                <span className="text-xs font-bold text-primary">{progress}%</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-primary h-full rounded-full transition-all duration-300 ease-in-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-xs text-muted-foreground">
+                  {completedTasks} / {taskCount} task selesai
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <div className="flex space-x-4 text-sm text-muted-foreground">
               <span>{taskCount} {taskCount === 1 ? 'task' : 'tasks'}</span>
               <span>•</span>
-              <span>{memberCount} {memberCount === 1 ? 'member' : 'members'}</span>
+              <span>{memberCount} {memberCount === 1 ? 'anggota' : 'anggota'}</span>
             </div>
 
             {project.members.length > 0 && (

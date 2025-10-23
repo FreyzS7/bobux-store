@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { InviteMemberInput } from "@/types/projects";
+import { broadcastInvitation } from "@/lib/supabase/broadcast";
 
 // Helper function to check if user can invite (owner or editor)
 async function canInvite(projectId: number, userId: number) {
@@ -119,6 +120,9 @@ export async function POST(
           }
         });
 
+        // Broadcast invitation event to the invited user
+        await broadcastInvitation(invitedUser.id, invitation.id, "received");
+
         return NextResponse.json(invitation, { status: 201 });
       }
     }
@@ -147,6 +151,9 @@ export async function POST(
         }
       }
     });
+
+    // Broadcast invitation event to the invited user
+    await broadcastInvitation(invitedUser.id, invitation.id, "received");
 
     return NextResponse.json(invitation, { status: 201 });
   } catch (error) {

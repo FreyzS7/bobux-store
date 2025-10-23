@@ -49,7 +49,10 @@ export function CreateTaskDialog({
     description: "",
     status: "TODO" as "TODO" | "IN_PROGRESS" | "COMPLETED",
     assignedToId: "unassigned" as string,
+    labels: [] as string[],
   });
+
+  const availableLabels = ["Fitur", "Bug", "UI", "Apa yah"];
 
   // Auto-open dialog when editTask is provided
   useEffect(() => {
@@ -60,6 +63,7 @@ export function CreateTaskDialog({
         description: editTask.description || "",
         status: editTask.status as "TODO" | "IN_PROGRESS" | "COMPLETED",
         assignedToId: editTask.assignedToId?.toString() || "unassigned",
+        labels: editTask.labels || [],
       });
     }
   }, [editTask]);
@@ -72,6 +76,7 @@ export function CreateTaskDialog({
         description: "",
         status: "TODO",
         assignedToId: "unassigned",
+        labels: [],
       });
     }
   }, [open, editTask]);
@@ -91,6 +96,7 @@ export function CreateTaskDialog({
         title: formData.title,
         description: formData.description || undefined,
         status: formData.status,
+        labels: formData.labels,
       };
 
       if (formData.assignedToId && formData.assignedToId !== "unassigned") {
@@ -115,7 +121,7 @@ export function CreateTaskDialog({
 
       toast.success(editTask ? "Task berhasil diupdate!" : "Task berhasil dibuat!");
       setOpen(false);
-      setFormData({ title: "", description: "", status: "TODO", assignedToId: "unassigned" });
+      setFormData({ title: "", description: "", status: "TODO", assignedToId: "unassigned", labels: [] });
       onSuccess?.();
     } catch (error: any) {
       toast.error(error.message || "Gagal simpan task");
@@ -223,6 +229,38 @@ export function CreateTaskDialog({
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Label</Label>
+              <div className="flex flex-wrap gap-2">
+                {availableLabels.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      const isSelected = formData.labels.includes(label);
+                      setFormData({
+                        ...formData,
+                        labels: isSelected
+                          ? formData.labels.filter((l) => l !== label)
+                          : [...formData.labels, label],
+                      });
+                    }}
+                    disabled={loading}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                      formData.labels.includes(label)
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Klik buat pilih/hapus label (bisa lebih dari 1)
+              </p>
             </div>
           </div>
 

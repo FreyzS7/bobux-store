@@ -23,7 +23,7 @@ export type ProjectMemberWithUser = ProjectMember & {
 }
 
 export type ProjectInvitationWithRelations = ProjectInvitation & {
-  project: Pick<Project, 'id' | 'name' | 'icon'>
+  project: Pick<Project, 'id' | 'name' | 'icon' | 'description'>
   invitedBy: Pick<User, 'id' | 'username'>
 }
 
@@ -46,6 +46,7 @@ export interface CreateTaskInput {
   status?: 'TODO' | 'IN_PROGRESS' | 'COMPLETED'
   assignedToId?: number
   position?: number
+  labels?: string[]
 }
 
 export interface UpdateTaskInput {
@@ -54,6 +55,7 @@ export interface UpdateTaskInput {
   status?: 'TODO' | 'IN_PROGRESS' | 'COMPLETED'
   assignedToId?: number
   position?: number
+  labels?: string[]
 }
 
 export interface InviteMemberInput {

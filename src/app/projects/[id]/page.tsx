@@ -100,6 +100,13 @@ export default function ProjectDetailPage() {
   );
   const canEdit = userMember?.role === "OWNER" || userMember?.role === "EDITOR";
 
+  // Calculate progress
+  const totalTasks = project.tasks.length;
+  const completedTasks = project.tasks.filter(task => task.status === "COMPLETED").length;
+  const inProgressTasks = project.tasks.filter(task => task.status === "IN_PROGRESS").length;
+  const todoTasks = project.tasks.filter(task => task.status === "TODO").length;
+  const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
   return (
     <>
       <Navigation />
@@ -159,6 +166,46 @@ export default function ProjectDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Progress Overview */}
+        {totalTasks > 0 && (
+          <div className="mb-6 bg-muted/30 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Progress Projek</h3>
+              <span className="text-2xl font-bold text-primary">{progress}%</span>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full bg-muted rounded-full h-3 overflow-hidden mb-4">
+              <div
+                className="bg-primary h-full rounded-full transition-all duration-300 ease-in-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+
+            {/* Task Breakdown */}
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="bg-background rounded-lg p-3">
+                <p className="text-2xl font-bold text-muted-foreground">{todoTasks}</p>
+                <p className="text-xs text-muted-foreground mt-1">TODO</p>
+              </div>
+              <div className="bg-background rounded-lg p-3">
+                <p className="text-2xl font-bold text-blue-500">{inProgressTasks}</p>
+                <p className="text-xs text-muted-foreground mt-1">LAGI DIKERJAIN</p>
+              </div>
+              <div className="bg-background rounded-lg p-3">
+                <p className="text-2xl font-bold text-green-500">{completedTasks}</p>
+                <p className="text-xs text-muted-foreground mt-1">SELESAI</p>
+              </div>
+            </div>
+
+            <div className="mt-3 text-center">
+              <span className="text-sm text-muted-foreground">
+                {completedTasks} dari {totalTasks} task udah kelar
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Members */}
         <div className="mb-6">

@@ -99,6 +99,7 @@ model Task {
   description String?    @db.Text
   status      TaskStatus @default(TODO)
   position    Int        @default(0) // For ordering within status column
+  labels      String[]   @default([]) // Array of labels
 
   projectId   Int
   project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)

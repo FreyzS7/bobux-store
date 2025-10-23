@@ -107,7 +107,7 @@ export async function POST(
     }
 
     const body: CreateTaskInput = await request.json();
-    const { title, description, status, assignedToId, position } = body;
+    const { title, description, status, assignedToId, position, labels } = body;
 
     // Validate required fields
     if (!title || title.trim().length === 0) {
@@ -140,6 +140,7 @@ export async function POST(
         position: taskPosition,
         projectId,
         assignedToId: assignedToId || null,
+        labels: labels || [],
       },
       include: {
         assignedTo: {
