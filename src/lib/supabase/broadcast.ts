@@ -1,16 +1,34 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-// Create a Supabase client for broadcasting events
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Lazy-initialize Supabase client to avoid build-time errors
+let supabase: SupabaseClient | null = null;
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+function getSupabaseClient() {
+  if (!supabase) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn("Supabase environment variables not set. Real-time features will be disabled.");
+      // Return a mock client that does nothing
+      return {
+        channel: () => ({
+          send: async () => {},
+        }),
+      } as any;
+    }
+
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+  }
+  return supabase;
+}
 
 /**
  * Broadcast a project update event
  */
 export async function broadcastProjectUpdate(projectId: number) {
-  const channel = supabase.channel(`project:${projectId}`);
+  const client = getSupabaseClient();
+  const channel = client.channel(`project:${projectId}`);
   await channel.send({
     type: "broadcast",
     event: "project_updated",
@@ -22,7 +40,8 @@ export async function broadcastProjectUpdate(projectId: number) {
  * Broadcast a task change event
  */
 export async function broadcastTaskChange(projectId: number, taskId: number, action: "created" | "updated" | "deleted") {
-  const channel = supabase.channel(`tasks:${projectId}`);
+  const client = getSupabaseClient();
+  const channel = client.channel(`tasks:${projectId}`);
   await channel.send({
     type: "broadcast",
     event: "task_changed",
@@ -34,7 +53,8 @@ export async function broadcastTaskChange(projectId: number, taskId: number, act
  * Broadcast a member change event
  */
 export async function broadcastMemberChange(projectId: number, userId: number, action: "joined" | "left") {
-  const channel = supabase.channel(`members:${projectId}`);
+  const client = getSupabaseClient();
+  const channel = client.channel(`members:${projectId}`);
   await channel.send({
     type: "broadcast",
     event: "member_changed",
@@ -46,7 +66,8 @@ export async function broadcastMemberChange(projectId: number, userId: number, a
  * Broadcast an invitation event
  */
 export async function broadcastInvitation(userId: number, invitationId: number, action: "received" | "accepted" | "rejected") {
-  const channel = supabase.channel(`invitations:${userId}`);
+  const client = getSupabaseClient();
+  const channel = client.channel(`invitations:${userId}`);
   await channel.send({
     type: "broadcast",
     event: "invitation_changed",

@@ -217,22 +217,24 @@ export async function DELETE(
     });
 
     // Broadcast project deletion to all members
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    // Broadcast to each member (including owner)
-    const memberUserIds = [...members.map(m => m.userId), userId];
-    const uniqueUserIds = [...new Set(memberUserIds)];
+    if (supabaseUrl && supabaseAnonKey) {
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    for (const memberId of uniqueUserIds) {
-      const channel = supabase.channel(`projects:${memberId}`);
-      await channel.send({
-        type: "broadcast",
-        event: "project_deleted",
-        payload: { projectId, userId: memberId },
-      });
+      // Broadcast to each member (including owner)
+      const memberUserIds = [...members.map(m => m.userId), userId];
+      const uniqueUserIds = [...new Set(memberUserIds)];
+
+      for (const memberId of uniqueUserIds) {
+        const channel = supabase.channel(`projects:${memberId}`);
+        await channel.send({
+          type: "broadcast",
+          event: "project_deleted",
+          payload: { projectId, userId: memberId },
+        });
+      }
     }
 
     return NextResponse.json({ message: "Project deleted successfully" });
