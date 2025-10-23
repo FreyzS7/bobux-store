@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { NotificationBadge } from "@/components/projects/NotificationBadge";
 
 export const Navigation = () => {
   const { data: session, status } = useSession();
@@ -22,6 +23,7 @@ export const Navigation = () => {
     const { role } = session.user;
     const links = [
       { href: "/", label: "Beranda" },
+      { href: "/projects", label: "Projects" },
     ];
 
     if (role === "SELLER") {
@@ -83,7 +85,7 @@ export const Navigation = () => {
             {status === "loading" && (
               <div className="text-sm text-muted-foreground">Memuat...</div>
             )}
-            
+
             {status === "unauthenticated" && (
               <Link href="/login">
                 <Button>Masuk</Button>
@@ -91,36 +93,39 @@ export const Navigation = () => {
             )}
 
             {status === "authenticated" && session.user && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback>
-                        {session.user.username?.[0]?.toUpperCase() || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <div className="flex flex-col space-y-1 p-2">
-                    <p className="text-sm font-medium leading-none">
-                      {session.user.username}
-                    </p>
-                    <Badge
-                      className={`w-fit text-xs text-white ${getRoleBadgeColor(session.user.role)}`}
+              <>
+                <NotificationBadge />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback>
+                          {session.user.username?.[0]?.toUpperCase() || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <div className="flex flex-col space-y-1 p-2">
+                      <p className="text-sm font-medium leading-none">
+                        {session.user.username}
+                      </p>
+                      <Badge
+                        className={`w-fit text-xs text-white ${getRoleBadgeColor(session.user.role)}`}
+                      >
+                        {session.user.role}
+                      </Badge>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onSelect={() => signOut({ callbackUrl: "/login" })}
                     >
-                      {session.user.role}
-                    </Badge>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onSelect={() => signOut({ callbackUrl: "/login" })}
-                  >
-                    Keluar
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      Keluar
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             )}
           </div>
         </div>

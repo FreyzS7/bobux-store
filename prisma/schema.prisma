@@ -21,6 +21,13 @@ model User {
   password      String
   role          UserRole
   listings      Listing[]
+
+  // Projects relations
+  ownedProjects       Project[]           @relation("ProjectOwner")
+  projectMemberships  ProjectMember[]
+  sentInvitations     ProjectInvitation[] @relation("InvitationSender")
+  receivedInvitations ProjectInvitation[] @relation("InvitationReceiver")
+  assignedTasks       Task[]              @relation("TaskAssignee")
 }
 
 model Listing {
@@ -65,4 +72,100 @@ enum ListingStatus {
 enum OrderStatus {
   PENDING
   COMPLETED
+}
+
+// Projects feature models
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?  @db.Text
+  icon        String?  // URL to icon/image
+  ownerId     Int
+  owner       User     @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tasks       Task[]
+  members     ProjectMember[]
+  invitations ProjectInvitation[]
+
+  @@index([ownerId])
+}
+
+model Task {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String?    @db.Text
+  status      TaskStatus @default(TODO)
+  position    Int        @default(0) // For ordering within status column
+
+  projectId   Int
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  assignedToId Int?
+  assignedTo   User?     @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([projectId])
+  @@index([assignedToId])
+  @@index([status])
+}
+
+model ProjectMember {
+  id        Int              @id @default(autoincrement())
+  role      ProjectRole      @default(EDITOR)
+
+  projectId Int
+  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  userId    Int
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  joinedAt  DateTime         @default(now())
+
+  @@unique([projectId, userId]) // A user can only be a member once per project
+  @@index([userId])
+  @@index([projectId])
+}
+
+model ProjectInvitation {
+  id            Int              @id @default(autoincrement())
+  status        InvitationStatus @default(PENDING)
+
+  projectId     Int
+  project       Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  invitedUserId Int
+  invitedUser   User             @relation("InvitationReceiver", fields: [invitedUserId], references: [id], onDelete: Cascade)
+
+  invitedById   Int
+  invitedBy     User             @relation("InvitationSender", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([projectId, invitedUserId]) // Can't invite same user twice to same project
+  @@index([invitedUserId])
+  @@index([projectId])
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ProjectRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
