@@ -6,10 +6,13 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
+  DragOverEvent,
   PointerSensor,
   useSensor,
   useSensors,
+  closestCorners,
 } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import { TaskWithRelations, ProjectMemberWithUser } from "@/types/projects";
 import { TaskCard } from "./TaskCard";
 import { DroppableColumn } from "./DroppableColumn";
@@ -64,61 +67,200 @@ export function TaskBoard({ projectId, tasks, members, onTasksChange }: TaskBoar
     setActiveTask(task || null);
   };
 
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id as number;
+    const overId = over.id;
+
+    const activeTask = optimisticTasks.find((t) => t.id === activeId);
+    if (!activeTask) return;
+
+    // Check if dragging over a column (status change)
+    const isOverColumn = columns.some((col) => col.id === overId);
+    if (isOverColumn) {
+      const newStatus = overId as TaskStatus;
+      if (activeTask.status !== newStatus) {
+        setOptimisticTasks((tasks) =>
+          tasks.map((t) =>
+            t.id === activeId ? { ...t, status: newStatus } : t
+          )
+        );
+      }
+      return;
+    }
+
+    // Check if dragging over another task (reordering)
+    const overTask = optimisticTasks.find((t) => t.id === overId);
+    if (overTask && activeTask.status === overTask.status) {
+      const tasksInStatus = optimisticTasks
+        .filter((t) => t.status === activeTask.status)
+        .sort((a, b) => a.position - b.position);
+
+      const oldIndex = tasksInStatus.findIndex((t) => t.id === activeId);
+      const newIndex = tasksInStatus.findIndex((t) => t.id === overId);
+
+      if (oldIndex !== newIndex) {
+        const reorderedTasks = arrayMove(tasksInStatus, oldIndex, newIndex);
+
+        // Update positions
+        const updatedTasks = optimisticTasks.map((task) => {
+          const newPositionIndex = reorderedTasks.findIndex((t) => t.id === task.id);
+          if (newPositionIndex !== -1) {
+            return { ...task, position: newPositionIndex };
+          }
+          return task;
+        });
+
+        setOptimisticTasks(updatedTasks);
+      }
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveTask(null);
 
-    if (!over) return;
-
-    // Prevent concurrent drag operations
-    if (isDragging) {
-      toast.error("Tunggu dulu, lagi proses nih");
-      return;
-    }
+    if (!over || isDragging) return;
 
     const taskId = active.id as number;
-    const newStatus = over.id as TaskStatus;
-
     const task = optimisticTasks.find((t) => t.id === taskId);
-    if (!task) return;
+    const originalTask = tasks.find((t) => t.id === taskId);
 
-    // If status hasn't changed, do nothing
-    if (task.status === newStatus) return;
+    if (!task || !originalTask) return;
+
+    // Check if anything changed
+    const statusChanged = task.status !== originalTask.status;
+    const positionChanged = task.position !== originalTask.position;
+
+    if (!statusChanged && !positionChanged) return;
 
     // Lock dragging
     setIsDragging(true);
-
-    // Store the original state for rollback
     const previousTasks = [...optimisticTasks];
 
-    // Optimistically update the UI immediately
-    setOptimisticTasks((prevTasks) =>
-      prevTasks.map((t) =>
-        t.id === taskId ? { ...t, status: newStatus } : t
-      )
-    );
-
     try {
+      // Calculate new position based on tasks in the target status
+      const tasksInStatus = optimisticTasks
+        .filter((t) => t.status === task.status && t.id !== taskId)
+        .sort((a, b) => a.position - b.position);
+
+      const newPosition = optimisticTasks.filter((t) =>
+        t.status === task.status
+      ).findIndex((t) => t.id === taskId);
+
       const response = await fetch(`/api/projects/${projectId}/tasks/${taskId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({
+          status: task.status,
+          position: newPosition,
+        }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to update task");
       }
 
-      toast.success("Status task udah diupdate!");
-      onTasksChange(); // Fetch fresh data from server
+      toast.success(statusChanged ? "Status task udah diupdate!" : "Urutan task udah diubah!");
+      onTasksChange();
     } catch (error) {
-      // Rollback to previous state on error
       setOptimisticTasks(previousTasks);
-      toast.error("Gagal update status task");
+      toast.error("Gagal update task");
     } finally {
-      // Always unlock dragging after operation completes
+      setIsDragging(false);
+    }
+  };
+
+  const handleMoveUp = async (taskId: number) => {
+    if (isDragging) return;
+
+    const task = optimisticTasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    const tasksInStatus = getTasksByStatus(task.status as TaskStatus);
+    const currentIndex = tasksInStatus.findIndex((t) => t.id === taskId);
+
+    if (currentIndex <= 0) return;
+
+    setIsDragging(true);
+    const previousTasks = [...optimisticTasks];
+
+    // Swap positions
+    const reorderedTasks = arrayMove(tasksInStatus, currentIndex, currentIndex - 1);
+    const updatedTasks = optimisticTasks.map((t) => {
+      const newIndex = reorderedTasks.findIndex((rt) => rt.id === t.id);
+      if (newIndex !== -1) {
+        return { ...t, position: newIndex };
+      }
+      return t;
+    });
+
+    setOptimisticTasks(updatedTasks);
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ position: currentIndex - 1 }),
+      });
+
+      if (!response.ok) throw new Error("Failed to move task");
+
+      toast.success("Task dipindah ke atas!");
+      onTasksChange();
+    } catch (error) {
+      setOptimisticTasks(previousTasks);
+      toast.error("Gagal pindahin task");
+    } finally {
+      setIsDragging(false);
+    }
+  };
+
+  const handleMoveDown = async (taskId: number) => {
+    if (isDragging) return;
+
+    const task = optimisticTasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    const tasksInStatus = getTasksByStatus(task.status as TaskStatus);
+    const currentIndex = tasksInStatus.findIndex((t) => t.id === taskId);
+
+    if (currentIndex >= tasksInStatus.length - 1) return;
+
+    setIsDragging(true);
+    const previousTasks = [...optimisticTasks];
+
+    // Swap positions
+    const reorderedTasks = arrayMove(tasksInStatus, currentIndex, currentIndex + 1);
+    const updatedTasks = optimisticTasks.map((t) => {
+      const newIndex = reorderedTasks.findIndex((rt) => rt.id === t.id);
+      if (newIndex !== -1) {
+        return { ...t, position: newIndex };
+      }
+      return t;
+    });
+
+    setOptimisticTasks(updatedTasks);
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ position: currentIndex + 1 }),
+      });
+
+      if (!response.ok) throw new Error("Failed to move task");
+
+      toast.success("Task dipindah ke bawah!");
+      onTasksChange();
+    } catch (error) {
+      setOptimisticTasks(previousTasks);
+      toast.error("Gagal pindahin task");
+    } finally {
       setIsDragging(false);
     }
   };
@@ -145,7 +287,9 @@ export function TaskBoard({ projectId, tasks, members, onTasksChange }: TaskBoar
   return (
     <DndContext
       sensors={sensors}
+      collisionDetection={closestCorners}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
       {isDragging && (
@@ -166,6 +310,8 @@ export function TaskBoard({ projectId, tasks, members, onTasksChange }: TaskBoar
               tasks={columnTasks}
               onEdit={setEditingTask}
               onDelete={handleDeleteTask}
+              onMoveUp={handleMoveUp}
+              onMoveDown={handleMoveDown}
             />
           );
         })}
@@ -173,7 +319,7 @@ export function TaskBoard({ projectId, tasks, members, onTasksChange }: TaskBoar
 
       <DragOverlay>
         {activeTask ? (
-          <div className="opacity-80">
+          <div className="opacity-90 rotate-2 scale-105 transition-transform">
             <TaskCard task={activeTask} />
           </div>
         ) : null}

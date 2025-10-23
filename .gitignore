@@ -32,9 +32,16 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-.claude
-.CLAUDE.md
-todo.md
+
+# Claude AI related files
+.claude/
+*.CLAUDE.md
+CLAUDE.md
+
+# Documentation files (internal notes, not for repo)
+*.md
+!README.md
+
 # vercel
 .vercel
 

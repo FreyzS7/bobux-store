@@ -58,12 +58,62 @@ export async function PATCH(
     if (description !== undefined) updateData.description = description?.trim() || null;
     if (status !== undefined) updateData.status = status;
     if (assignedToId !== undefined) updateData.assignedToId = assignedToId;
-    if (position !== undefined) updateData.position = position;
     if (labels !== undefined) updateData.labels = labels;
 
-    const task = await prisma.task.update({
+    // Handle position updates with reordering logic
+    if (position !== undefined || status !== undefined) {
+      const targetStatus = status !== undefined ? status : existingTask.status;
+
+      // Get all tasks in the target status
+      const tasksInStatus = await prisma.task.findMany({
+        where: {
+          projectId: projectId,
+          status: targetStatus,
+          id: { not: taskIdNum }
+        },
+        orderBy: { position: 'asc' }
+      });
+
+      // Calculate new position
+      const newPosition = position !== undefined ? position : tasksInStatus.length;
+
+      // Update positions in a transaction
+      await prisma.$transaction(async (tx) => {
+        // Update the dragged task
+        await tx.task.update({
+          where: { id: taskIdNum },
+          data: { ...updateData, status: targetStatus, position: newPosition }
+        });
+
+        // Reorder other tasks
+        for (let i = 0; i < tasksInStatus.length; i++) {
+          const task = tasksInStatus[i];
+          let adjustedPosition = i;
+
+          // If the new position is at or before this task, shift it down
+          if (i >= newPosition) {
+            adjustedPosition = i + 1;
+          }
+
+          if (task.position !== adjustedPosition) {
+            await tx.task.update({
+              where: { id: task.id },
+              data: { position: adjustedPosition }
+            });
+          }
+        }
+      });
+    } else {
+      // Simple update without position changes
+      await prisma.task.update({
+        where: { id: taskIdNum },
+        data: updateData
+      });
+    }
+
+    // Fetch the updated task
+    const task = await prisma.task.findUnique({
       where: { id: taskIdNum },
-      data: updateData,
       include: {
         assignedTo: {
           select: {

@@ -25,7 +25,7 @@ async function main() {
     },
 
   ];
-
+ 
   for (const user of users) {
     const existingUser = await prisma.user.findUnique({
       where: { username: user.username },

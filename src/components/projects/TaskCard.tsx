@@ -11,15 +11,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Trash2, Edit } from "lucide-react";
+import { MoreVertical, Trash2, Edit, ArrowUp, ArrowDown } from "lucide-react";
 
 interface TaskCardProps {
   task: TaskWithRelations;
   onEdit?: (task: TaskWithRelations) => void;
   onDelete?: (taskId: number) => void;
+  onMoveUp?: (taskId: number) => void;
+  onMoveDown?: (taskId: number) => void;
 }
 
-export function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
+export function TaskCard({ task, onEdit, onDelete, onMoveUp, onMoveDown }: TaskCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "TODO":
@@ -80,6 +82,28 @@ export function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </DropdownMenuItem>
+              {onMoveUp && (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMoveUp(task.id);
+                  }}
+                >
+                  <ArrowUp className="h-4 w-4 mr-2" />
+                  Pindah ke Atas
+                </DropdownMenuItem>
+              )}
+              {onMoveDown && (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMoveDown(task.id);
+                  }}
+                >
+                  <ArrowDown className="h-4 w-4 mr-2" />
+                  Pindah ke Bawah
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation();

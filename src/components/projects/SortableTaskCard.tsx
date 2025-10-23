@@ -9,9 +9,17 @@ interface SortableTaskCardProps {
   task: TaskWithRelations;
   onEdit?: (task: TaskWithRelations) => void;
   onDelete?: (taskId: number) => void;
+  onMoveUp?: (taskId: number) => void;
+  onMoveDown?: (taskId: number) => void;
 }
 
-export function SortableTaskCard({ task, onEdit, onDelete }: SortableTaskCardProps) {
+export function SortableTaskCard({
+  task,
+  onEdit,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+}: SortableTaskCardProps) {
   const {
     attributes,
     listeners,
@@ -29,7 +37,13 @@ export function SortableTaskCard({ task, onEdit, onDelete }: SortableTaskCardPro
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <TaskCard task={task} onEdit={onEdit} onDelete={onDelete} />
+      <TaskCard
+        task={task}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onMoveUp={onMoveUp}
+        onMoveDown={onMoveDown}
+      />
     </div>
   );
 }
